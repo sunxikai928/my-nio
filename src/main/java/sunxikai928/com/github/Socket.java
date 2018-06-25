@@ -1,8 +1,6 @@
 package sunxikai928.com.github;
 
-import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
-import java.util.List;
 
 /**
  * 包含 Channel/request/response/reader/writer/selectionKey
@@ -15,5 +13,10 @@ public class Socket {
 
     public Socket(SocketChannel socketChannel) {
         this.socketChannel = socketChannel;
+    }
+
+    @Override
+    public String toString() {
+        return socketChannel.socket().toString();
     }
 }

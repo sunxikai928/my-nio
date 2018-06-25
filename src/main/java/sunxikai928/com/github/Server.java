@@ -26,10 +26,9 @@ public class Server {
         SocketRead socketRead = new SocketRead(socketWrite);
         SocketAccept socketAccept = new SocketAccept(socketRead, port);
 
-        new Thread(socketAccept).start();
-        new Thread(socketRead).start();
-        // 这样会导致CPU消耗严重
-        new Thread(socketWrite).start();
+        new Thread(socketAccept,"accept_thread").start();
+        new Thread(socketRead,"read_thread").start();
+        new Thread(socketWrite,"write_thread").start();
 
     }
 }

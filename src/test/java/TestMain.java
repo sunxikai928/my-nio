@@ -31,7 +31,7 @@ public class TestMain {
             writeBuff.clear();
             readBuff.clear();
             Thread.sleep(1000);
-            if (i == 15){
+            if (i == 15) {
                 socketChannel.close();
                 break;
             }

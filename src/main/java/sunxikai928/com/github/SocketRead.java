@@ -36,8 +36,7 @@ public class SocketRead implements Runnable {
         for (; ; ) {
             try {
                 int num = this.readSelector.selectNow();
-                while (num > 0) {
-                    num = 0;
+                if (num > 0) {
                     Set<SelectionKey> selectionKeys = this.readSelector.selectedKeys();
                     Iterator<SelectionKey> iterator = selectionKeys.iterator();
                     while (iterator.hasNext()) {
@@ -56,18 +55,26 @@ public class SocketRead implements Runnable {
                         }
                         this.readBuffer.flip();
 
-                        // 处理数据 解析/处理返回值
+                        // TODO 处理数据 解析/处理返回值
                         String message = new String(this.readBuffer.array(), 0, i);
-                        System.out.println(message);
+                        log.info(message);
                         socket.message = "收到信息:" + message;
-                        // 这里的注册要和SocketWrite中的取消同步
-                        socketChannel.register(socketWrite.writSelector, SelectionKey.OP_WRITE, socket);
+                        // 不注册 注册的过程移动到写线程中取,这里加入队列
+                        socketWrite.queue.offer(socket);
 
                         // 将 selectionKey 从已选中中删除
                         iterator.remove();
                         this.readBuffer.clear();
                     }
                     selectionKeys.clear();
+                } else {
+                    // 没有可读的时候休眠
+                    // 休眠是必须的,如果不休眠CPU会100%
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
             } catch (IOException e) {
                 log.error("获取可读渠道报错", e);
