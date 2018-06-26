@@ -1,4 +1,4 @@
-package provider;
+package sunxikai928.com.github.provider;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
