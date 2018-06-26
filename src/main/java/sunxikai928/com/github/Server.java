@@ -8,9 +8,11 @@ import java.io.IOException;
 public class Server {
 
     private int port = 10000;
+    private IMessageProcessor iMessageProcessor;
 
     //消息处理对象(应用程序)
-    public Server() {
+    public Server(IMessageProcessor iMessageProcessor) {
+        this.iMessageProcessor = iMessageProcessor;
     }
 
     //消息处理对象(应用程序)
@@ -23,7 +25,7 @@ public class Server {
      */
     public void start() throws IOException {
         SocketWrite socketWrite = new SocketWrite();
-        SocketRead socketRead = new SocketRead(socketWrite);
+        SocketRead socketRead = new SocketRead(socketWrite,this.iMessageProcessor);
         SocketAccept socketAccept = new SocketAccept(socketRead, port);
 
         new Thread(socketAccept,"accept_thread").start();

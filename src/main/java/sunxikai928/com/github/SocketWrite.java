@@ -15,6 +15,12 @@ import java.util.concurrent.ArrayBlockingQueue;
 
 /**
  * 监听数据的写出
+ * 选择器中可写的判断条件是,操作系统的写缓存区有空闲空间(基本一直有空闲空间)
+ * 所以只要是注册了的 channel 一直可写,这些key 在被取消之前会一直被返回
+ * 如果取消 注册,只是被放入了删除队列中,直到进行下一次选择操作时才移除该键.
+ * 如果是被放入了删除队列,这时候channel再次注册就会报错 java.nio.channels.CancelledKeyException
+ * 下一次选择操作我看了一下就是有新的连接进来被选中
+ * 所以这里是加了一个队列,只有有消息要写的时候我才去遍历选择器,没有东西写就睡眠
  * Created by sunxikai on 18/6/24.
  */
 public class SocketWrite implements Runnable {
@@ -75,9 +81,12 @@ public class SocketWrite implements Runnable {
     private void write() {
         try {
             // selectNow 立即返回 不阻塞 可能为 0
+            // 判断条件是操作系统的 写缓存区域有空间就返回 基本上 写缓存区 一直有空闲空间
+            // 所以只要是注册在这个选择器上的都会被认为一直都是准备好的
+            // 除非将这个 key 取消
             int num = this.writSelector.selectNow();
-            while (num > 0) {
-                num = 0;
+            if (num > 0) {
+                // selectedKeys 返回已经准备好的 key
                 Set<SelectionKey> selectionKeys = this.writSelector.selectedKeys();
                 Iterator<SelectionKey> iterator = selectionKeys.iterator();
                 while (iterator.hasNext()) {
@@ -88,7 +97,6 @@ public class SocketWrite implements Runnable {
                         // 转换为读模式
                         this.writBuffer.flip();
                         socket.socketChannel.write(this.writBuffer);
-                        log.info(socket.message);
                         socket.message = null;
                         this.writBuffer.clear();
                     }

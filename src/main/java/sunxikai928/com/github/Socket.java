@@ -9,6 +9,9 @@ import java.nio.channels.SocketChannel;
 public class Socket {
 
     public SocketChannel socketChannel;
+    //请求信息
+    public String requestMessage;
+    // 返回信息
     public String message;
 
     public Socket(SocketChannel socketChannel) {
